@@ -4,24 +4,34 @@ package com.fun.yzss.db.entity;
  * Created by fanqq on 2016/10/10.
  */
 public class TagDo extends DataObject {
-    String name;
-    Long id;
+    String tag;
+    Long targetId;
+    String targetType;
 
-    public Long getId() {
-        return id;
+    public String getTag() {
+        return tag;
     }
 
-    public TagDo setId(Long id) {
-        this.id = id;
+    public TagDo setTag(String tag) {
+        this.tag = tag;
         return this;
     }
 
-    public String getName() {
-        return name;
+    public Long getTargetId() {
+        return targetId;
     }
 
-    public TagDo setName(String name) {
-        this.name = name;
+    public TagDo setTargetId(Long targetId) {
+        this.targetId = targetId;
+        return this;
+    }
+
+    public String getTargetType() {
+        return targetType;
+    }
+
+    public TagDo setTargetType(String targetType) {
+        this.targetType = targetType;
         return this;
     }
 }

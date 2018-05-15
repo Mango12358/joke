@@ -7,6 +7,8 @@ import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.uri.UriComponent;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -34,6 +36,18 @@ public class AbstractRestClient {
 
     protected AbstractRestClient(String url, int readTimeout) {
         Client client = ClientBuilder.newBuilder()
+                .withConfig(new ClientConfig())
+                .register(MultiPartFeature.class)
+                .build();
+        client.property(ClientProperties.CONNECT_TIMEOUT, connectTimeout.get());
+        client.property(ClientProperties.READ_TIMEOUT, readTimeout);
+        webTarget = client.target(url);
+    }
+
+    protected AbstractRestClient(String url, int readTimeout, SSLContext sslContext, HostnameVerifier hostnameVerifier) {
+        Client client = ClientBuilder.newBuilder()
+                .sslContext(sslContext)
+                .hostnameVerifier(hostnameVerifier)
                 .withConfig(new ClientConfig())
                 .register(MultiPartFeature.class)
                 .build();

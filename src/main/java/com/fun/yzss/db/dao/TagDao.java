@@ -1,8 +1,11 @@
 package com.fun.yzss.db.dao;
 
+import com.fun.yzss.db.engine.QueryEngine;
 import com.fun.yzss.db.entity.TagDo;
+import com.fun.yzss.db.query.TagQuery;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -10,23 +13,31 @@ import java.util.List;
  */
 @Service("tagDao")
 public class TagDao {
-    public List<TagDo> findAllByNames(String[] strings) {
-        return null;
+
+    @Resource
+    private QueryEngine queryEngine;
+
+    public List<TagDo> findAllByTarget(String targetType, Long targetId) {
+        return queryEngine.queryMultiple(TagQuery.FIND_BY_TAG, new TagDo().setTargetType(targetType).setTargetId(targetId), TagDo.class);
     }
 
-    public TagDo[] findAllByIds(Long[] targetIds) {
-        return new TagDo[0];
+    public List<TagDo> findAll() {
+        return queryEngine.queryMultiple(TagQuery.FIND_BY_TAG, new TagDo(), TagDo.class);
     }
 
-    public TagDo findByName(String name) {
-        return null;
+    public List<TagDo> findByTag(String tag) {
+        return queryEngine.queryMultiple(TagQuery.FIND_BY_TAG, new TagDo().setTag(tag), TagDo.class);
     }
 
     public void delete(TagDo d) {
-
+        queryEngine.deleteSingle(TagQuery.DELETE, d);
     }
 
-    public void insert(TagDo d) {
+    public int insert(TagDo d) {
+        return queryEngine.insertSingle(TagQuery.INSERT_INTO, d);
+    }
 
+    public int[] insertBatch(TagDo[] d) {
+        return queryEngine.insertBatch(TagQuery.INSERT_INTO, d);
     }
 }

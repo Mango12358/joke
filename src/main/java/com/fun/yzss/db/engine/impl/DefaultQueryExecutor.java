@@ -72,7 +72,7 @@ public class DefaultQueryExecutor implements QueryExecutor {
 
             int rowCount = ps.executeUpdate();
 
-            if (ctx.getQuery().getType() == QueryType.INSERT) {
+            if (ctx.getQuery().getType() == QueryType.INSERT && ps.getGeneratedKeys().next()) {
                 ctx.getDataObject().setId(ps.getGeneratedKeys().getLong(1));
             }
             return rowCount;
