@@ -60,7 +60,8 @@ public class ImageClient extends AbstractRestClient {
 
 
     public String getImage(String page) {
-        WebTarget target = getTarget().path("/zh/photos/?").queryParam("order", "popular").queryParam("pagi", page);
+        WebTarget target = getTarget().path("/zh/photos/?").queryParam("order", "popular").queryParam("pagi", page)
+                .queryParam("image_type","photo").queryParam("orientation","horizontal");
 
         return target.request().header("User-Agent", " Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36").accept("*/*")
                 .cookie("is_human", "1").cookie("g_rated", "1").cookie("csrftoken", "yCSZkdNZA0magG0W6Qf9I6ZCXA23QYHbtXfSHwJqDnSISkyfr94s2ESTlLqAh0MH").get(String.class);
@@ -74,8 +75,20 @@ public class ImageClient extends AbstractRestClient {
     public Response getDownloadUrl(String uri) {
         WebTarget target = getTarget().path("/zh/photos/download/" + uri);
         return target.request().header("User-Agent", " Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36").accept("*/*")
-                .cookie("sessionid", ".eJxVy0sOgjAUQNG9vDEh9EM_bsWY5rUUWi1gaDvRuHeRgQnje-4bTMJlqjh5uMArQANDgsuVMU2JULcGDNYSTM1-MwFz2JVl3BHP7Ci1JHykyGzHe0F05wV1TCH2yAVjcJrjsK9KS0WFPBeL7uGXX35u69270tYSU25dzWWdD9jGgy44e7Nuxs8Y0__7fAGYzkDl:1fIPzH:33DA_efsfmd90i1nDZ8boe3U3Oc")
+                .cookie("sessionid", ".eJxVy00OgyAQQOG7zNoYFQTxKk1DBhyFFn8isGnTu9e6aOL6fe8NOuAyZZwIeng5KGAI0N9YpbhQ4l6AxpyczpF27TC6QxnGbU3MjFLJmo8NMlPxVtSqItFY1iG2yAVjcJn9cKydkl0j5LUYtE9afnnb1wfZVObkQyxtjmmdT1j6ky44k153TTP68P8-X5wVQOo:1fJAAo:Pt9oiuM5JBB8me1lJmX8E8-3jf0")
                 .get();
+    }
+
+    public Response downloadPage(String url) {
+        WebTarget target = getTarget().path(url);
+        return target.request().accept("*/*").get();
+    }
+
+    public String getApiData(String category, String order, int page) {
+        return getTarget().path("/api/").queryParam("key","8978267-7793b5ba0ed1d84489bb2190d")
+                .queryParam("image_type", "photo").queryParam("pretty", "true")
+                .queryParam("category", category).queryParam("safesearch", true).queryParam("order", order)
+                .queryParam("page", page).queryParam("per_page", 200).request().get(String.class);
     }
 }
 

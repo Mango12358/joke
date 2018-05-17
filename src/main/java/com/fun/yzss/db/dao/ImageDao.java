@@ -6,6 +6,8 @@ import com.fun.yzss.db.query.ImageQuery;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service("imageDao")
 public class ImageDao {
@@ -21,7 +23,15 @@ public class ImageDao {
         return queryEngine.insertBatch(ImageQuery.INSERT_INTO, d);
     }
 
-    public void  update(ImageDo d){
+    public void update(ImageDo d) {
         queryEngine.updateSingle(ImageQuery.UPDATE_BY_ID, d);
+    }
+
+    public List<ImageDo> getAll() {
+        return queryEngine.queryMultiple(ImageQuery.FIND_ALL, new ImageDo(), ImageDo.class);
+    }
+
+    public List<ImageDo> getByType(String type) {
+        return queryEngine.queryMultiple(ImageQuery.FIND_BY_TYPE, new ImageDo().setType(type), ImageDo.class);
     }
 }
