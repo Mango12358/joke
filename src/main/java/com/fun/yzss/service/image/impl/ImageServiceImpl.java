@@ -122,6 +122,27 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
+    public void cdnDownload(String uri, String type, ImageClient cdnClient, String id) throws Exception {
+        Response response = cdnClient.downloadPage(uri);
+        if (response.getStatus() / 100 == 2) {
+            int x = uri.lastIndexOf(".");
+            File file = new File("E://images/" + type + "/" + id + uri.substring(x));
+            InputStream in = (InputStream) response.getEntity();
+            FileOutputStream fileWriter = new FileOutputStream(file);
+
+            try {
+                byte[] tmp = new byte[1024];
+                int i = 0;
+                while ((i = in.read(tmp)) > 0) {
+                    fileWriter.write(tmp, 0, i);
+                }
+            } finally {
+                fileWriter.close();
+            }
+        }
+    }
+
+    @Override
     public void download(String url, ImageClient client) throws Exception {
         Response response = client.getDownloadUrl(url);
         if (response.getStatus() / 100 == 2) {
@@ -142,27 +163,6 @@ public class ImageServiceImpl implements ImageService {
 
     }
 
-    @Override
-    public void downloadImage(String url, String type, ImageClient client, String id) throws Exception {
-        Response response = client.downloadPage(url);
-        if (response.getStatus() / 100 == 2) {
-            int x = url.lastIndexOf(".");
-            File file = new File("E://images/" + type + "/" + id + url.substring(x));
-            InputStream in = (InputStream) response.getEntity();
-            FileOutputStream fileWriter = new FileOutputStream(file);
-
-            try {
-                byte[] tmp = new byte[1024];
-                int i = 0;
-                while ((i = in.read(tmp)) > 0) {
-                    fileWriter.write(tmp, 0, i);
-                }
-            } finally {
-                fileWriter.close();
-            }
-        }
-
-    }
 
     private String getDownloadUrl(String imageDetails) {
         Pattern downloadPattern = Pattern.compile("value=\"(.*?)\" data-perm=\"check\"(.*?)</tr>\n" +

@@ -106,43 +106,23 @@ public class ImageResource {
         }
 
         threadPoolExecutor.execute(new Runnable() {
-            ImageClient client = ImageClient.create();
-            int page = 1;
             String type = "travel";
 
             @Override
             public void run() {
                 while (true) {
                     try {
-                        if (queue.size() > 200) {
-                            try {
-                                Thread.sleep(10000);
-                                continue;
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
+                            List<ImageDo> imageDos = imageDao.getByType("旅游度假");
+                            for (ImageDo imageDo : imageDos) {
+                                String[] tmp = new String[3];
+                                tmp[0] = imageDo.getUrl();
+                                tmp[1] = type;
+                                tmp[2] = imageDo.getSourceId();
+                                queue.add(tmp);
                             }
-                        }
-                        String data = client.getApiData(type, "popular", page);
-                        JSONObject node = JSON.parseObject(data);
-                        long total = node.getLong("total");
-                        if (total - page * 200 <= 0) {
-                            break;
-                        }
-                        for (JSONObject hit : node.getJSONArray("hits").toArray(new JSONObject[]{})) {
-                            Long id = hit.getLong("id");
-                            String url = hit.getString("largeImageURL");
-                            String[] tmp = new String[3];
-                            tmp[0] = url;
-                            tmp[1] = type;
-                            tmp[2] = id.toString();
-                            queue.add(tmp);
-                        }
-                        page++;
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-
-
                 }
             }
         });
@@ -157,7 +137,7 @@ public class ImageResource {
 
         DownloadThread(ConcurrentLinkedQueue<String[]> queue) {
             this.queue = queue;
-            client = ImageClient.create();
+            client = ImageClient.createCDN();
         }
 
         @Override
@@ -166,7 +146,7 @@ public class ImageResource {
                 if (!queue.isEmpty()) {
                     String[] tmp = queue.poll();
                     try {
-                        imageService.downloadImage(tmp[0].replaceFirst("https://pixabay.com", ""), tmp[1], client, tmp[2]);
+                        imageService.cdnDownload(tmp[0].replaceFirst("https://cdn.pixabay.com", ""), tmp[1], client, tmp[2]);
                     } catch (Exception e) {
                         queue.add(tmp);
                     }

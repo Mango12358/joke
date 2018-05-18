@@ -49,6 +49,9 @@ public class ImageClient extends AbstractRestClient {
         super(ConfigurationManager.getConfigInstance().getString("image.host", "https://pixabay.com"),
                 900000, sslContext, alwaysPassedHostnameVerifier);
     }
+    protected ImageClient(String url) {
+        super(url,900000, sslContext, alwaysPassedHostnameVerifier);
+    }
 
     public static ImageClient getInstance() {
         return instance;
@@ -56,6 +59,10 @@ public class ImageClient extends AbstractRestClient {
 
     public static ImageClient create() {
         return new ImageClient();
+    }
+
+    public static ImageClient createCDN() {
+        return new ImageClient("https://cdn.pixabay.com");
     }
 
 
