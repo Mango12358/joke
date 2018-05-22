@@ -34,4 +34,12 @@ public class ImageDao {
     public List<ImageDo> getByType(String type) {
         return queryEngine.queryMultiple(ImageQuery.FIND_BY_TYPE, new ImageDo().setType(type), ImageDo.class);
     }
+
+    public List<ImageDo> getByTypeWithLimit(String type, Long offSet, Long len) {
+        return queryEngine.queryMultiple(ImageQuery.FIND_BY_TYPE_WITH_LIMIT, new ImageDo().setType(type).setOffset(offSet).setLen(len), ImageDo.class);
+    }
+
+    public void updateRandomIndex() {
+        queryEngine.updateSingle(ImageQuery.UPDATE_RANDOM_IDX, new ImageDo());
+    }
 }

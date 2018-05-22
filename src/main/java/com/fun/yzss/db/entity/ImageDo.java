@@ -1,12 +1,39 @@
 package com.fun.yzss.db.entity;
 
-public class ImageDo extends DataObject{
+public class ImageDo extends DataObject {
     Long id;
     String type;
     String url;
-    String sourceId;
+    Long sourceId;
     String cosURI;
     String tagList;
+
+    Long height;
+    Long width;
+    String status;
+    Long randomIndex;
+
+
+    Long offset;
+    Long len;
+
+    public Long getOffset() {
+        return offset;
+    }
+
+    public ImageDo setOffset(Long offset) {
+        this.offset = offset;
+        return this;
+    }
+
+    public Long getLen() {
+        return len;
+    }
+
+    public ImageDo setLen(Long len) {
+        this.len = len;
+        return this;
+    }
 
     public String getCosURI() {
         return cosURI;
@@ -53,12 +80,48 @@ public class ImageDo extends DataObject{
         return this;
     }
 
-    public String getSourceId() {
+    public Long getSourceId() {
         return sourceId;
     }
 
-    public ImageDo setSourceId(String sourceId) {
+    public ImageDo setSourceId(Long sourceId) {
         this.sourceId = sourceId;
+        return this;
+    }
+
+    public Long getHeight() {
+        return height;
+    }
+
+    public ImageDo setHeight(Long height) {
+        this.height = height;
+        return this;
+    }
+
+    public Long getWidth() {
+        return width;
+    }
+
+    public ImageDo setWidth(Long width) {
+        this.width = width;
+        return this;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public ImageDo setStatus(String status) {
+        this.status = status;
+        return this;
+    }
+
+    public Long getRandomIndex() {
+        return randomIndex;
+    }
+
+    public ImageDo setRandomIndex(Long randomIndex) {
+        this.randomIndex = randomIndex;
         return this;
     }
 }

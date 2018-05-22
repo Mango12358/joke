@@ -21,7 +21,7 @@ import javax.ws.rs.core.MultivaluedMap;
 public class AbstractRestClient {
     private WebTarget webTarget;
 
-    private static DynamicIntProperty connectTimeout = DynamicPropertyFactory.getInstance().getIntProperty("client.connect.timeout", 1000);
+    private static DynamicIntProperty connectTimeout = DynamicPropertyFactory.getInstance().getIntProperty("client.connect.timeout", 5000);
     private static DynamicIntProperty readTimeout = DynamicPropertyFactory.getInstance().getIntProperty("client.read.timeout", 30000);
 
     protected AbstractRestClient(String url) {

@@ -9,6 +9,7 @@ import com.fun.yzss.client.BSJokeClient;
 import com.fun.yzss.client.ImageClient;
 import com.fun.yzss.db.dao.ImageDao;
 import com.fun.yzss.db.entity.ImageDo;
+import com.fun.yzss.service.image.ImageNewService;
 import com.fun.yzss.service.image.ImageService;
 import com.fun.yzss.service.joke.bs.BSJokeUtils;
 import com.fun.yzss.service.joke.model.Joke;
@@ -24,6 +25,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -37,93 +39,107 @@ public class ImageResource {
     @Resource
     private ImageService imageService;
     @Resource
+    private ImageNewService imageNewService;
+    @Resource
     private ImageDao imageDao;
 
     private ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(50, 100, 100, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(1));
 
-    @GET
-    @Path("/url")
-    public Response bs(@Context HttpServletRequest request,
-                       @Context HttpHeaders hh) throws Exception {
-        int threadCount = 28;
-//        int total = 7875;
-        int total = 28;
-        final int base = 1543;
-        final int step = total / threadCount;
+    private static LinkedHashMap<String, String> typeMap = new LinkedHashMap<>();
 
-
-        for (int i = 0; i <= threadCount; i++) {
-            final int j = i;
-            threadPoolExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        imageService.parserData(j * step + base, (j + 1) * step + 1 + base, ImageClient.create());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-        }
-
-        return Response.status(200).entity("success").build();
-    }
-    @GET
-    @Path("/new/url")
-    public Response url(@Context HttpServletRequest request,
-                       @Context HttpHeaders hh) throws Exception {
-        int threadCount = 50;
-        int total = 5414;
-        final int base = 0;
-        final int step = total / threadCount;
-
-
-        for (int i = 0; i <= threadCount; i++) {
-            final int j = i;
-            threadPoolExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        imageService.parserData2(j * step + base, (j + 1) * step + 1 + base, ImageClient.create());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-        }
-
-        return Response.status(200).entity("success").build();
+    static {
+        typeMap.put("science", "科学技术");
+        typeMap.put("feelings", "表情");
+        typeMap.put("computer", "计算机");
+        typeMap.put("religion", "宗教");
+        typeMap.put("industry", "产业技术");
+        typeMap.put("business", "商务");
+        typeMap.put("health", "医疗健康");
+        typeMap.put("music", "音乐");
+        typeMap.put("transportation", "交通运输");
+        typeMap.put("backgrounds", "背景");
+        typeMap.put("fashion", "时尚");
+        typeMap.put("education", "教育");
+        typeMap.put("sports", "运动");
+        typeMap.put("people", "人物");
+        typeMap.put("food", "食物/饮料");
+        typeMap.put("animals", "动物");
+        typeMap.put("buildings", "建筑");
+        typeMap.put("places", "地标");
+        typeMap.put("travel", "旅游度假");
+        typeMap.put("nature", "自然风光");
     }
 
     @GET
-    @Path("/download")
-    public Response download(@Context HttpServletRequest request,
-                             @Context HttpHeaders hh) throws Exception {
-        final ConcurrentLinkedQueue<String[]> queue = new ConcurrentLinkedQueue<>();
+    @Path("/getImages")
+    public Response test(@Context HttpServletRequest request,
+                         @Context HttpHeaders hh) throws Exception {
+        for (final String type : typeMap.keySet()) {
+            long count = imageNewService.getPageCount(type);
+            int threadCount = 50;
+            final int base = 1;
+            if (count < threadCount) {
+                threadCount = (int) count / 2;
+                if (threadCount == 0) {
+                    threadCount = 1;
+                }
+            }
+            final int step = (int) count / threadCount;
 
+            for (int i = 0; i <= threadCount; i++) {
+                final int j = i;
+                threadPoolExecutor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            imageNewService.parser(typeMap.get(type), j * step + base, (j + 1) * step + base, ImageClient.create());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+            while (threadPoolExecutor.getActiveCount() > 0) {
+                Thread.sleep(10000);
+            }
+        }
+        return Response.status(200).entity("success").build();
+    }
+
+    @GET
+    @Path("/downloadImages")
+    public Response downloadImages(@Context HttpServletRequest request,
+                                   @Context HttpHeaders hh) throws Exception {
+        final ConcurrentLinkedQueue<ImageDo> queue = new ConcurrentLinkedQueue<>();
         for (int i = 0; i < 20; i++) {
             threadPoolExecutor.execute(new DownloadThread(queue));
         }
 
         threadPoolExecutor.execute(new Runnable() {
-            String type = "travel";
-
             @Override
             public void run() {
-                while (true) {
-                    try {
-                            List<ImageDo> imageDos = imageDao.getByType("旅游度假");
-                            for (ImageDo imageDo : imageDos) {
-                                String[] tmp = new String[3];
-                                tmp[0] = imageDo.getUrl();
-                                tmp[1] = type;
-                                tmp[2] = imageDo.getSourceId();
-                                queue.add(tmp);
+                for (String type : typeMap.keySet()) {
+                    long count = 0;
+                    long step = 1000;
+                    while (true) {
+                        if (queue.size() > 200){
+                            try {
+                                Thread.sleep(5000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
                             }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        }
+                        try {
+                            List<ImageDo> imageDos = imageDao.getByTypeWithLimit(typeMap.get(type), count, step);
+                            if (imageDos == null || imageDos.size() == 0) break;
+                            queue.addAll(imageDos);
+                            count += imageDos.size();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
+
             }
         });
 
@@ -132,10 +148,10 @@ public class ImageResource {
 
     class DownloadThread implements Runnable {
 
-        private ConcurrentLinkedQueue<String[]> queue;
+        private ConcurrentLinkedQueue<ImageDo> queue;
         ImageClient client;
 
-        DownloadThread(ConcurrentLinkedQueue<String[]> queue) {
+        DownloadThread(ConcurrentLinkedQueue<ImageDo> queue) {
             this.queue = queue;
             client = ImageClient.createCDN();
         }
@@ -144,9 +160,9 @@ public class ImageResource {
         public void run() {
             while (true) {
                 if (!queue.isEmpty()) {
-                    String[] tmp = queue.poll();
+                    ImageDo tmp = queue.poll();
                     try {
-                        imageService.cdnDownload(tmp[0].replaceFirst("https://cdn.pixabay.com", ""), tmp[1], client, tmp[2]);
+                        imageNewService.download(tmp, client);
                     } catch (Exception e) {
                         queue.add(tmp);
                     }
