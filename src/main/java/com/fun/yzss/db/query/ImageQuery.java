@@ -16,7 +16,7 @@ public class ImageQuery {
             new String[]{"id", "type", "url", "sourceId", "cosURI", "tagList", "randomIndex", "height", "width", "status"});
     final public static QueryDef FIND_BY_TYPE = new QueryDef(QueryType.SELECT, "SELECT * FROM `images` where type={type}",
             new String[]{"id", "type", "url", "sourceId", "cosURI", "tagList", "randomIndex", "height", "width", "status"});
-    final public static QueryDef UPDATE_RANDOM_IDX = new QueryDef(QueryType.UPDATE, "UPDATE `images` SET random_index = RAND() * (SELECT MAX(id) FROM `images`)",
+    final public static QueryDef UPDATE_RANDOM_IDX = new QueryDef(QueryType.UPDATE, "UPDATE `images` SET random_index = RAND() * 2100000000",
             new String[]{"id", "type", "url", "sourceId", "cosURI", "tagList", "randomIndex", "height", "width", "status"});
 
 
