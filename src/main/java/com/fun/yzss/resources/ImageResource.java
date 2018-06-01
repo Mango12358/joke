@@ -20,6 +20,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
@@ -48,34 +49,41 @@ public class ImageResource {
     private static LinkedHashMap<String, String> typeMap = new LinkedHashMap<>();
 
     static {
-        typeMap.put("science", "科学技术");
+        typeMap.put("science", "科技");
         typeMap.put("feelings", "表情");
         typeMap.put("computer", "计算机");
         typeMap.put("religion", "宗教");
-        typeMap.put("industry", "产业技术");
+        typeMap.put("industry", "工业");
         typeMap.put("business", "商务");
-        typeMap.put("health", "医疗健康");
+        typeMap.put("health", "健康");
         typeMap.put("music", "音乐");
-        typeMap.put("transportation", "交通运输");
+        typeMap.put("transportation", "交通");
         typeMap.put("backgrounds", "背景");
         typeMap.put("fashion", "时尚");
         typeMap.put("education", "教育");
         typeMap.put("sports", "运动");
         typeMap.put("people", "人物");
-        typeMap.put("food", "食物/饮料");
+        typeMap.put("food", "食物");
         typeMap.put("animals", "动物");
         typeMap.put("buildings", "建筑");
         typeMap.put("places", "地标");
-        typeMap.put("travel", "旅游度假");
-        typeMap.put("nature", "自然风光");
+        typeMap.put("travel", "旅游");
+        typeMap.put("nature", "风景");
     }
 
     @GET
     @Path("/getImages")
     public Response test(@Context HttpServletRequest request,
-                         @Context HttpHeaders hh) throws Exception {
+                         @Context HttpHeaders hh,
+                         @QueryParam("count") Long maxCount) throws Exception {
+        if (maxCount == null){
+            maxCount = Long.MAX_VALUE;
+        }
         for (final String type : typeMap.keySet()) {
             long count = imageNewService.getPageCount(type);
+            if (count > maxCount) {
+                count = maxCount;
+            }
             int threadCount = 50;
             final int base = 1;
             if (count < threadCount) {
@@ -92,7 +100,7 @@ public class ImageResource {
                     @Override
                     public void run() {
                         try {
-                            imageNewService.parser(typeMap.get(type), j * step + base, (j + 1) * step + base, ImageClient.create());
+                            imageNewService.parser(typeMap.get(type), j * step + base, (j + 1) * step + base, ImageClient.create(),type);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -118,7 +126,7 @@ public class ImageResource {
         threadPoolExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                for (String type : typeMap.keySet()) {
+                for (String type : typeMap.values()) {
                     long count = 0;
                     long step = 1000;
                     while (true) {
@@ -130,7 +138,7 @@ public class ImageResource {
                             }
                         }
                         try {
-                            List<ImageDo> imageDos = imageDao.getByTypeWithLimit(typeMap.get(type), count, step);
+                            List<ImageDo> imageDos = imageDao.getByTypeWithLimit(type, count, step);
                             if (imageDos == null || imageDos.size() == 0) break;
                             queue.addAll(imageDos);
                             count += imageDos.size();

@@ -37,7 +37,7 @@ public class ImageNewServiceImpl implements ImageNewService {
     private ImageDao imageDao;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static final String FILE_ROOT = "E://images/";
+    private static final String FILE_ROOT = "E:\\\\images\\\\";
     private final String KEY_ID = "AKIDqelmcIvCP3ZuusJBbpuwt2ISQGuMIefV";
     private final String KEY_SEC = "mNqAIEzYyDJExg4JMLCXnxvhCNREqGUW";
     private final String BUCKET_NAME = "image-1256364513";
@@ -54,11 +54,11 @@ public class ImageNewServiceImpl implements ImageNewService {
     }
 
     @Override
-    public void parser(String type, int start, int end, ImageClient client) throws Exception {
+    public void parser(String type, int start, int end, ImageClient client, String pageType) throws Exception {
         Pattern pattern = Pattern.compile("2x\\\" (src|data-lazy)=\"(.*?)__(.*?)\\.(.*?)\\\" alt=\"(.*?)\"");
         for (int i = start; i < end; ) {
             try {
-                String data = client.getImage(String.valueOf(i));
+                String data = client.getImagesByType(String.valueOf(i), pageType);
                 if (data == null) {
                     logger.error("DataFailed.ID:" + i);
                     continue;
@@ -94,7 +94,7 @@ public class ImageNewServiceImpl implements ImageNewService {
 
     @Override
     public void download(ImageDo imageDo, ImageClient client) throws Exception {
-        String uri = imageDo.getUrl().replaceAll("https://cdn.pixabay.com","");
+        String uri = imageDo.getUrl().replaceAll("https://cdn.pixabay.com", "");
         Long id = imageDo.getSourceId();
         Response response = client.downloadPage(uri);
         if (response.getStatus() / 100 == 2) {
@@ -102,20 +102,30 @@ public class ImageNewServiceImpl implements ImageNewService {
 
             InputStream in = (InputStream) response.getEntity();
 
-            BufferedImage image = ImageIO.read(in);
+            ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
+            byte[] buff = new byte[1024];
+            int rc = 0;
+            while ((rc = in.read(buff, 0, 1024)) > 0) {
+                swapStream.write(buff, 0, rc);
+            }
+            byte[] imageBytes = swapStream.toByteArray();
+
+            BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageBytes));
             imageDo.setHeight((long) image.getHeight());
             imageDo.setWidth((long) image.getWidth());
 
+            String key = SHAEncoder.getSHA256Str(new String(imageBytes));
+
             //To File
-            File file = new File(FILE_ROOT + id + uri.substring(x));
-            ImageIO.write(image, uri.substring(x), file);
+            File file = new File(FILE_ROOT + key + uri.substring(x));
+            ImageIO.write(image, uri.substring(x + 1), file);
+
+
+            imageDo.setCosURI(key + uri.substring(x));
+            imageDao.update(imageDo);
 
             //To InputStream
-//            ByteArrayOutputStream os = new ByteArrayOutputStream();
-//            ImageIO.write(image, uri.substring(x), os);
-//            byte[] array = os.toByteArray();
 //            InputStream is = new ByteArrayInputStream(array);
-//            imageDao.update(imageDo);
 //            pushToCos(imageDo, is, array.length);
         }
     }

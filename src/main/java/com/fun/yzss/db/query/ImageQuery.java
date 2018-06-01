@@ -21,7 +21,7 @@ public class ImageQuery {
 
 
     final public static QueryDef FIND_BY_TYPE_WITH_LIMIT = new QueryDef(QueryType.SELECT, "SELECT * FROM `images` where type={type} limit {offset} , {len}",
-            new String[]{"id", "type", "url", "sourceId", "cosURI", "tagList", "randomIndex", "height", "width", "status", "offset", "len"});
+            new String[]{"id", "type", "url", "sourceId", "cosURI", "tagList", "randomIndex", "height", "width", "status", "choice"});
 
 
 }

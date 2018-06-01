@@ -17,7 +17,7 @@ public interface ImageNewService {
     /***
      * Parser Image Data.
      * **/
-    void parser(String type, int start, int end, ImageClient client) throws Exception;
+    void parser(String type, int start, int end, ImageClient client,String pageType) throws Exception;
 
     /**
      * Download and update image info

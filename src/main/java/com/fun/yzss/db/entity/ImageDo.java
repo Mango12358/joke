@@ -12,6 +12,8 @@ public class ImageDo extends DataObject {
     Long width;
     String status;
     Long randomIndex;
+    Integer choice;
+
 
 
     Long offset;
