@@ -68,7 +68,7 @@ public class ImageNewServiceImpl implements ImageNewService {
                 while (matcher.find()) {
                     String downloadUrl = matcher.group(2);
                     String imageType = matcher.group(4);
-                    String tagStr = matcher.group(5).replaceAll("性质", "自然风景");
+                    String tagStr = matcher.group(5).replaceAll("性质", "自然,风景");
 
                     List<String> tags = new ArrayList<>();
                     String[] y = tagStr.split(", ");
@@ -85,6 +85,34 @@ public class ImageNewServiceImpl implements ImageNewService {
                     imageDos.add(imageDo);
                 }
                 imageDao.insertBatch(imageDos.toArray(new ImageDo[imageDos.size()]));
+                i++;
+            } catch (Exception e) {
+                logger.error("Failed.", e);
+            }
+        }
+    }
+
+    @Override
+    public void parserChoice(int start, int end, ImageClient client) throws Exception {
+        Pattern pattern = Pattern.compile("2x\\\" (src|data-lazy)=\"(.*?)__(.*?)\\.(.*?)\\\" alt=\"(.*?)\"");
+        for (int i = start; i < end; ) {
+            try {
+                String data = client.getImagesByChoice(String.valueOf(i));
+                if (data == null) {
+                    logger.error("DataFailed.ID:" + i);
+                    continue;
+                }
+                Matcher matcher = pattern.matcher(data);
+                while (matcher.find()) {
+                    String downloadUrl = matcher.group(2);
+
+                    ImageDo imageDo = new ImageDo();
+                    int startIndex = downloadUrl.lastIndexOf("-");
+                    String sourceId = downloadUrl.substring(startIndex + 1);
+                    imageDo.setSourceId(Long.parseLong(sourceId));
+                    imageDo.setChoice(1);
+                    imageDao.updateChoice(imageDo);
+                }
                 i++;
             } catch (Exception e) {
                 logger.error("Failed.", e);
@@ -122,11 +150,17 @@ public class ImageNewServiceImpl implements ImageNewService {
 
 
             imageDo.setCosURI(key + uri.substring(x));
-            imageDao.update(imageDo);
 
-            //To InputStream
-//            InputStream is = new ByteArrayInputStream(array);
-//            pushToCos(imageDo, is, array.length);
+            if (imageDo.getHeight() < 600) {
+                imageDo.setStatus(String.valueOf(0));
+            } else {
+                //To InputStream
+//            InputStream is = new ByteArrayInputStream(imageBytes);
+//            pushToCos(imageDo, is, imageBytes.length);
+                imageDo.setStatus(String.valueOf(imageBytes.length / 1024));
+            }
+
+            imageDao.update(imageDo);
         }
     }
 

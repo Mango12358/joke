@@ -27,6 +27,10 @@ public class ImageDao {
         queryEngine.updateSingle(ImageQuery.UPDATE_BY_ID, d);
     }
 
+    public void updateChoice(ImageDo d) {
+        queryEngine.updateSingle(ImageQuery.UPDATE_CHOICE_BY_SOURCE_ID, d);
+    }
+
     public List<ImageDo> getAll() {
         return queryEngine.queryMultiple(ImageQuery.FIND_ALL, new ImageDo(), ImageDo.class);
     }

@@ -76,7 +76,7 @@ public class ImageResource {
     public Response test(@Context HttpServletRequest request,
                          @Context HttpHeaders hh,
                          @QueryParam("count") Long maxCount) throws Exception {
-        if (maxCount == null){
+        if (maxCount == null) {
             maxCount = Long.MAX_VALUE;
         }
         for (final String type : typeMap.keySet()) {
@@ -100,7 +100,7 @@ public class ImageResource {
                     @Override
                     public void run() {
                         try {
-                            imageNewService.parser(typeMap.get(type), j * step + base, (j + 1) * step + base, ImageClient.create(),type);
+                            imageNewService.parser(typeMap.get(type), j * step + base, (j + 1) * step + base, ImageClient.create(), type);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -111,6 +111,19 @@ public class ImageResource {
                 Thread.sleep(10000);
             }
         }
+        return Response.status(200).entity("success").build();
+    }
+
+
+    @GET
+    @Path("/getChoice")
+    public Response getChoice(@Context HttpServletRequest request,
+                              @Context HttpHeaders hh,
+                              @QueryParam("count") Integer maxCount) throws Exception {
+        if (maxCount == null) {
+            maxCount = 100;
+        }
+        imageNewService.parserChoice(0, maxCount, ImageClient.getInstance());
         return Response.status(200).entity("success").build();
     }
 
@@ -130,13 +143,15 @@ public class ImageResource {
                     long count = 0;
                     long step = 1000;
                     while (true) {
-                        if (queue.size() > 200){
+                        if (queue.size() > 200) {
                             try {
                                 Thread.sleep(5000);
+                                continue;
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
                         }
+                        System.gc();
                         try {
                             List<ImageDo> imageDos = imageDao.getByTypeWithLimit(type, count, step);
                             if (imageDos == null || imageDos.size() == 0) break;

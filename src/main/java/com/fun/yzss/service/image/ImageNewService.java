@@ -28,4 +28,6 @@ public interface ImageNewService {
      * Push To COS
      */
     void pushToCos(ImageDo imageDo, InputStream in, long contentLen) throws Exception;
+
+    void parserChoice(int start, int end, ImageClient client) throws Exception;
 }

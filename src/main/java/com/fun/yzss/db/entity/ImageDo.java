@@ -19,6 +19,15 @@ public class ImageDo extends DataObject {
     Long offset;
     Long len;
 
+    public Integer getChoice() {
+        return choice;
+    }
+
+    public ImageDo setChoice(Integer choice) {
+        this.choice = choice;
+        return this;
+    }
+
     public Long getOffset() {
         return offset;
     }

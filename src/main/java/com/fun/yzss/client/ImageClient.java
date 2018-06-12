@@ -74,6 +74,15 @@ public class ImageClient extends AbstractRestClient {
                 .cookie("is_human", "1").cookie("g_rated", "1").cookie("csrftoken", "yCSZkdNZA0magG0W6Qf9I6ZCXA23QYHbtXfSHwJqDnSISkyfr94s2ESTlLqAh0MH").get(String.class);
     }
 
+    public String getImagesByChoice(String page) {
+        WebTarget target = getTarget().path("/zh/photos/?").queryParam("order", "ec").queryParam("pagi", page)
+                .queryParam("image_type","photo").queryParam("orientation","horizontal");
+
+        return target.request().header("User-Agent", " Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36").accept("*/*")
+                .cookie("is_human", "1").cookie("g_rated", "1").cookie("csrftoken", "yCSZkdNZA0magG0W6Qf9I6ZCXA23QYHbtXfSHwJqDnSISkyfr94s2ESTlLqAh0MH").get(String.class);
+    }
+
+
     public Response downloadPage(String url) {
         WebTarget target = getTarget().path(url);
         return target.request().accept("*/*").get();
